@@ -1,0 +1,5 @@
+{
+  "name": "Team Color Sorter",
+  "description": "An application to sort a list of names into two or four color groups and generate an image of the result. Ideal for quickly dividing teams or groups from a pasted list.",
+  "requestFramePermissions": []
+}
