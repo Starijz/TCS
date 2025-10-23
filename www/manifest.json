@@ -21,8 +21,7 @@
     {
       "src": "https://icons.iconarchive.com/icons/google/noto-emoji-activities/512/12800-ice-hockey-icon.png",
       "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any maskable"
+      "sizes": "512x512"
     }
   ],
   "start_url": ".",

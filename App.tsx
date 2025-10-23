@@ -1,12 +1,17 @@
 
+
+
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { toPng } from 'html-to-image';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import type { Person } from './types';
 import { PALETTES } from './constants';
 import { NameInputStep } from './components/NameInputStep';
 import { AssignmentStep } from './components/AssignmentStep';
 import { useLanguage } from './contexts/LanguageContext';
 import type { Language } from './translations';
+import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 
 // Helper to determine the best text color (light/dark) for a given background color
 const getTextColorForBg = (hexColor: string | null): string => {
@@ -34,9 +39,9 @@ const App: React.FC = () => {
     const { language, setLanguage, t } = useLanguage();
     const [rawNames, setRawNames] = useState<string>('');
     const [people, setPeople] = useState<Person[]>([]);
-    const [paletteSize, setPaletteSize] = useState<2 | 4>(4);
-    const [currentPalette, setCurrentPalette] = useState<string[]>(PALETTES[4]);
-    const [selectedColor, setSelectedColor] = useState<string>(PALETTES[4][0]);
+    const [paletteSize, setPaletteSize] = useState<2 | 4>(2);
+    const [currentPalette, setCurrentPalette] = useState<string[]>(PALETTES[2]);
+    const [selectedColor, setSelectedColor] = useState<string>(PALETTES[2][0]);
     const [step, setStep] = useState<'input' | 'assign'>('input');
     const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -92,28 +97,45 @@ const App: React.FC = () => {
         setRawNames('');
         setPeople([]);
         setStep('input');
-        setPaletteSize(4);
-        const initialPalette = PALETTES[4];
+        setPaletteSize(2);
+        const initialPalette = PALETTES[2];
         setCurrentPalette(initialPalette);
         setSelectedColor(initialPalette[0]);
     }, []);
 
-    const handleCreateImage = useCallback(() => {
+    const handleCreateImage = useCallback(async () => {
         if (resultsRef.current === null) {
             return;
         }
 
-        toPng(resultsRef.current, { cacheBust: true, backgroundColor: '#1e293b' })
-            .then((dataUrl) => {
+        try {
+            const dataUrl = await toPng(resultsRef.current, { 
+                cacheBust: true, 
+                backgroundColor: '#1e293b',
+                pixelRatio: 1,
+                quality: 0.95
+            });
+            
+            if (Capacitor.isNativePlatform()) {
+                await Filesystem.writeFile({
+                    path: `team-assignments-${Date.now()}.png`,
+                    data: dataUrl,
+                    // Fix: Changed Directory.Downloads to Directory.Documents as Downloads is not a valid enum member.
+                    directory: Directory.Documents,
+                });
+                alert(t('imageSavedToDownloads'));
+            } else {
                 const link = document.createElement('a');
                 link.download = 'team-assignments.png';
                 link.href = dataUrl;
                 link.click();
-            })
-            .catch((err) => {
-                console.error(err);
-                alert(t('imageError'));
-            });
+            }
+
+        } catch (err) {
+            console.error(err);
+            // A generic error is shown if either image generation or saving fails.
+            alert(t('imageError'));
+        }
     }, [resultsRef, t]);
 
     const { unassigned, assigned } = useMemo(() => {
@@ -224,7 +246,7 @@ const App: React.FC = () => {
                         onClick={handleCreateImage}
                         className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
                     >
-                        {t('createImageButton')}
+                        {t('shareImageButton')}
                     </button>
                     <button
                         onClick={handleReset}
@@ -234,6 +256,7 @@ const App: React.FC = () => {
                     </button>
                 </footer>
             )}
+            <PwaInstallPrompt />
         </div>
     );
 };

@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useMemo, useCallback } from 'react';
 import { translations, Language, TranslationKey } from '../translations';
 
@@ -11,7 +10,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [language, setLanguage] = useState<Language>('ru');
+    const [language, setLanguage] = useState<Language>('en');
 
     const t = useCallback((key: TranslationKey): string => {
         return translations[language][key] || translations['en'][key];

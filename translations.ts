@@ -1,4 +1,6 @@
 
+
+
 export type Language = 'en' | 'lv' | 'ru';
 
 export type TranslationKey =
@@ -16,9 +18,15 @@ export type TranslationKey =
   | 'assignedProgress'
   | 'unassignedListTitle'
   | 'group'
-  | 'createImageButton'
+  | 'shareImageButton'
   | 'startOverButton'
-  | 'imageError';
+  | 'imageError'
+  | 'shareTitle'
+  | 'shareDialogTitle'
+  | 'imageSavedToDownloads'
+  | 'installPwaPrompt'
+  | 'installButton'
+  | 'dismissButton';
 
 type Translations = {
   [lang in Language]: {
@@ -42,9 +50,15 @@ export const translations: Translations = {
     assignedProgress: 'Assigned',
     unassignedListTitle: 'Unassigned',
     group: 'Group',
-    createImageButton: 'Create Image',
+    shareImageButton: 'Share Image',
     startOverButton: 'Start Over',
-    imageError: 'Could not generate image. Please try again.',
+    imageError: 'Could not generate or share image. Please try again.',
+    shareTitle: 'Team Assignments',
+    shareDialogTitle: 'Share Teams',
+    imageSavedToDownloads: 'Image saved to your Documents folder!',
+    installPwaPrompt: 'Get the full app experience!',
+    installButton: 'Install',
+    dismissButton: 'Later',
   },
   lv: {
     appTitle: 'Komandu Krāsu Šķirotājs',
@@ -61,9 +75,15 @@ export const translations: Translations = {
     assignedProgress: 'Piešķirti',
     unassignedListTitle: 'Nepiešķirti',
     group: 'Grupa',
-    createImageButton: 'Izveidot attēlu',
+    shareImageButton: 'Dalīties ar attēlu',
     startOverButton: 'Sākt no jauna',
-    imageError: 'Neizdevās izveidot attēlu. Lūdzu mēģiniet vēlreiz.',
+    imageError: 'Neizdevās izveidot vai nosūtīt attēlu. Lūdzu mēģiniet vēlreiz.',
+    shareTitle: 'Komandu sadalījums',
+    shareDialogTitle: 'Dalīties ar komandām',
+    imageSavedToDownloads: 'Attēls saglabāts jūsu Dokumentu mapē!',
+    installPwaPrompt: 'Iegūstiet pilnu lietotnes pieredzi!',
+    installButton: 'Instalēt',
+    dismissButton: 'Vēlāk',
   },
   ru: {
     appTitle: 'Сортировщик по цветам',
@@ -80,8 +100,14 @@ export const translations: Translations = {
     assignedProgress: 'Назначено',
     unassignedListTitle: 'Нераспределенные',
     group: 'Группа',
-    createImageButton: 'Создать картинку',
+    shareImageButton: 'Поделиться',
     startOverButton: 'Начать заново',
-    imageError: 'Не удалось создать изображение. Пожалуйста, попробуйте еще раз.',
+    imageError: 'Не удалось создать или отправить изображение. Пожалуйста, попробуйте еще раз.',
+    shareTitle: 'Распределение по командам',
+    shareDialogTitle: 'Поделиться командами',
+    imageSavedToDownloads: 'Изображение сохранено в папку "Документы"!',
+    installPwaPrompt: 'Установите приложение для лучшего опыта!',
+    installButton: 'Установить',
+    dismissButton: 'Позже',
   },
 };

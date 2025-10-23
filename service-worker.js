@@ -1,17 +1,14 @@
-const CACHE_NAME = 'team-color-sorter-v1';
+const CACHE_NAME = 'team-color-sorter-v5';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
-  '/index.tsx',
-  '/App.tsx',
-  '/components/AssignmentStep.tsx',
-  '/components/NameInputStep.tsx',
-  '/contexts/LanguageContext.tsx',
-  '/translations.ts',
-  '/constants.ts',
-  '/types.ts',
+  '/index.js',
+  '/manifest.json',
   'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js'
+  'https://icons.iconarchive.com/icons/google/noto-emoji-activities/48/12800-ice-hockey-icon.png',
+  'https://icons.iconarchive.com/icons/google/noto-emoji-activities/96/12800-ice-hockey-icon.png',
+  'https://icons.iconarchive.com/icons/google/noto-emoji-activities/256/12800-ice-hockey-icon.png',
+  'https://icons.iconarchive.com/icons/google/noto-emoji-activities/512/12800-ice-hockey-icon.png'
 ];
 
 self.addEventListener('install', event => {
@@ -19,24 +16,22 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache');
-        // We use addAll, but ignore errors for CDN scripts which might fail due to opaque responses
-        const promises = URLS_TO_CACHE.map(url => {
-            return fetch(url, { mode: 'no-cors' }).then(response => {
-                if (response.status === 200) {
-                    return cache.put(url, response);
-                }
-                return Promise.resolve();
-            }).catch(() => {
-                // Also cache local files this way
-                return cache.add(url).catch(err => console.warn(`Failed to cache ${url}`, err));
-            });
+        // Use reload to bypass browser cache for fresh assets during installation
+        const requests = URLS_TO_CACHE.map(url => new Request(url, { cache: 'reload' }));
+        return cache.addAll(requests).catch(err => {
+          console.warn('Failed to cache some initial resources:', err);
         });
-        return Promise.all(promises);
       })
   );
 });
 
 self.addEventListener('fetch', event => {
+  // We only handle GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Strategy: Cache, falling back to network
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -45,30 +40,31 @@ self.addEventListener('fetch', event => {
           return response;
         }
 
-        // Clone the request because it's a stream and can only be consumed once
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then(
-          response => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              // For CDN scripts, we get opaque responses. We can't cache them this way.
-              // They are handled during the install phase.
-              return response;
+        // Not in cache, fetch from network
+        return fetch(event.request).then(
+          networkResponse => {
+            // Check if we received a valid response.
+            // We don't cache opaque responses (e.g. from no-cors requests to CDNs)
+            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+              return networkResponse;
             }
 
-            const responseToCache = response.clone();
+            // IMPORTANT: Clone the response. A response is a stream
+            // and because we want the browser to consume the response
+            // as well as the cache consuming the response, we need
+            // to clone it so we have two streams.
+            const responseToCache = networkResponse.clone();
 
             caches.open(CACHE_NAME)
               .then(cache => {
                 cache.put(event.request, responseToCache);
               });
 
-            return response;
+            return networkResponse;
           }
         );
       })
-    );
+  );
 });
 
 self.addEventListener('activate', event => {
@@ -78,6 +74,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
