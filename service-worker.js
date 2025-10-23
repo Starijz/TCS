@@ -1,9 +1,9 @@
-const CACHE_NAME = 'team-color-sorter-v5';
+const CACHE_NAME = 'team-color-sorter-v6';
 const URLS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/index.js',
-  '/manifest.json',
+  './',
+  './index.html',
+  './index.js',
+  './manifest.json',
   'https://cdn.tailwindcss.com',
   'https://icons.iconarchive.com/icons/google/noto-emoji-activities/48/12800-ice-hockey-icon.png',
   'https://icons.iconarchive.com/icons/google/noto-emoji-activities/96/12800-ice-hockey-icon.png',

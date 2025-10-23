@@ -1,6 +1,8 @@
 
 
 
+
+
 export type Language = 'en' | 'lv' | 'ru';
 
 export type TranslationKey =
@@ -26,7 +28,9 @@ export type TranslationKey =
   | 'imageSavedToDownloads'
   | 'installPwaPrompt'
   | 'installButton'
-  | 'dismissButton';
+  | 'dismissButton'
+  | 'autoAssignButton'
+  | 'autoAssignTooltip';
 
 type Translations = {
   [lang in Language]: {
@@ -42,9 +46,9 @@ export const translations: Translations = {
     textareaPlaceholder: 'John Doe\nJane Smith\nPeter Jones...',
     processListButton: 'Process List',
     step2Title: 'Step 2: Assign Colors',
-    step2Description: 'Select a color, then click a name from the list on the right to assign it.',
-    numColorsLabel: 'Number of Colors',
-    colors: 'colors',
+    step2Description: 'Select a color, then click a name from the list on the right to assign it. Or, use the shuffle button to assign everyone automatically.',
+    numColorsLabel: 'Number of Teams',
+    colors: 'teams',
     paletteEditorLabel: 'Palette & Editor',
     changeColorTitle: 'Change color',
     assignedProgress: 'Assigned',
@@ -59,6 +63,8 @@ export const translations: Translations = {
     installPwaPrompt: 'Get the full app experience!',
     installButton: 'Install',
     dismissButton: 'Later',
+    autoAssignButton: 'Shuffle & Assign All',
+    autoAssignTooltip: 'Randomly assign all unassigned people to the teams.',
   },
   lv: {
     appTitle: 'Komandu Krāsu Šķirotājs',
@@ -67,9 +73,9 @@ export const translations: Translations = {
     textareaPlaceholder: 'Jānis Bērziņš\nAnna Liepiņa\nKārlis Ozoliņš...',
     processListButton: 'Apstrādāt sarakstu',
     step2Title: '2. Solis: Piešķiriet krāsas',
-    step2Description: 'Izvēlieties krāsu, pēc tam noklikšķiniet uz vārda sarakstā labajā pusē, lai to piešķirtu.',
-    numColorsLabel: 'Krāsu skaits',
-    colors: 'krāsas',
+    step2Description: 'Izvēlieties krāsu, pēc tam noklikšķiniet uz vārda sarakstā labajā pusē, lai to piešķirtu. Vai arī izmantojiet sajaukšanas pogu, lai visus piešķirtu automātiski.',
+    numColorsLabel: 'Komandu skaits',
+    colors: 'komandas',
     paletteEditorLabel: 'Palete un redaktors',
     changeColorTitle: 'Mainīt krāsu',
     assignedProgress: 'Piešķirti',
@@ -84,6 +90,8 @@ export const translations: Translations = {
     installPwaPrompt: 'Iegūstiet pilnu lietotnes pieredzi!',
     installButton: 'Instalēt',
     dismissButton: 'Vēlāk',
+    autoAssignButton: 'Sajaukt un piešķirt visus',
+    autoAssignTooltip: 'Nejauši piešķirt visus nepiešķirtos cilvēkus komandām.',
   },
   ru: {
     appTitle: 'Сортировщик по цветам',
@@ -92,9 +100,9 @@ export const translations: Translations = {
     textareaPlaceholder: 'Иван Иванов\nПетр Петров\nМария Сидорова...',
     processListButton: 'Обработать список',
     step2Title: 'Шаг 2: Распределите цвета',
-    step2Description: 'Выберите цвет, а затем имя из списка справа, чтобы присвоить его.',
-    numColorsLabel: 'Количество цветов',
-    colors: 'цвета',
+    step2Description: 'Выберите цвет, а затем имя из списка справа, чтобы присвоить его. Или используйте кнопку перемешивания, чтобы назначить всех автоматически.',
+    numColorsLabel: 'Количество команд',
+    colors: 'команды',
     paletteEditorLabel: 'Палитра и редактор',
     changeColorTitle: 'Изменить цвет',
     assignedProgress: 'Назначено',
@@ -109,5 +117,7 @@ export const translations: Translations = {
     installPwaPrompt: 'Установите приложение для лучшего опыта!',
     installButton: 'Установить',
     dismissButton: 'Позже',
+    autoAssignButton: 'Перемешать и назначить всех',
+    autoAssignTooltip: 'Случайным образом распределить всех нераспределенных людей по командам.',
   },
 };

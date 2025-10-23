@@ -1,12 +1,14 @@
 
 
 
+
+
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { toPng } from 'html-to-image';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import type { Person } from './types';
-import { PALETTES } from './constants';
+import { PREDEFINED_PALETTE, MIN_TEAMS, MAX_TEAMS } from './constants';
 import { NameInputStep } from './components/NameInputStep';
 import { AssignmentStep } from './components/AssignmentStep';
 import { useLanguage } from './contexts/LanguageContext';
@@ -39,9 +41,9 @@ const App: React.FC = () => {
     const { language, setLanguage, t } = useLanguage();
     const [rawNames, setRawNames] = useState<string>('');
     const [people, setPeople] = useState<Person[]>([]);
-    const [paletteSize, setPaletteSize] = useState<2 | 4>(2);
-    const [currentPalette, setCurrentPalette] = useState<string[]>(PALETTES[2]);
-    const [selectedColor, setSelectedColor] = useState<string>(PALETTES[2][0]);
+    const [numTeams, setNumTeams] = useState<number>(2);
+    const [currentPalette, setCurrentPalette] = useState<string[]>(PREDEFINED_PALETTE.slice(0, 2));
+    const [selectedColor, setSelectedColor] = useState<string>(PREDEFINED_PALETTE[0]);
     const [step, setStep] = useState<'input' | 'assign'>('input');
     const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -52,17 +54,25 @@ const App: React.FC = () => {
         setStep('assign');
     }, [rawNames]);
 
-    const handlePaletteSizeChange = useCallback((size: 2 | 4) => {
-        setPaletteSize(size);
-        const newPalette = PALETTES[size];
+    const handleNumTeamsChange = useCallback((newSize: number) => {
+        if (newSize < MIN_TEAMS || newSize > MAX_TEAMS) return;
+
+        setNumTeams(newSize);
+        const newPalette = PREDEFINED_PALETTE.slice(0, newSize);
         setCurrentPalette(newPalette);
-        setSelectedColor(newPalette[0]);
+        
+        // If the currently selected color is not in the new palette, select the first one.
+        if (!newPalette.includes(selectedColor)) {
+            setSelectedColor(newPalette[0]);
+        }
+
+
         // Unassign colors that are no longer in the palette
         setPeople(prev => prev.map(p => ({
             ...p,
             color: p.color && newPalette.includes(p.color) ? p.color : null,
         })));
-    }, []);
+    }, [selectedColor]);
 
     const handlePaletteColorChange = useCallback((index: number, newColor: string) => {
         setCurrentPalette(prev => {
@@ -93,12 +103,34 @@ const App: React.FC = () => {
         }));
     }, [selectedColor]);
 
+    const handleAutoAssign = useCallback(() => {
+        setPeople(prevPeople => {
+            const unassigned = prevPeople.filter(p => !p.color);
+            const assigned = prevPeople.filter(p => p.color);
+    
+            if (unassigned.length === 0) return prevPeople;
+    
+            // Fisher-Yates shuffle
+            const shuffled = [...unassigned];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+    
+            const newAssignments = shuffled.map((person, index) => {
+                return { ...person, color: currentPalette[index % numTeams] };
+            });
+    
+            return [...assigned, ...newAssignments].sort((a, b) => a.id - b.id);
+        });
+    }, [currentPalette, numTeams]);
+
     const handleReset = useCallback(() => {
         setRawNames('');
         setPeople([]);
         setStep('input');
-        setPaletteSize(2);
-        const initialPalette = PALETTES[2];
+        setNumTeams(2);
+        const initialPalette = PREDEFINED_PALETTE.slice(0, 2);
         setCurrentPalette(initialPalette);
         setSelectedColor(initialPalette[0]);
     }, []);
@@ -186,14 +218,15 @@ const App: React.FC = () => {
                         {/* Left Column: Controls */}
                         <div className="w-full xl:w-1/3">
                             <AssignmentStep
-                                paletteSize={paletteSize}
-                                onPaletteSizeChange={handlePaletteSizeChange}
+                                numTeams={numTeams}
+                                onNumTeamsChange={handleNumTeamsChange}
                                 currentPalette={currentPalette}
                                 onPaletteColorChange={handlePaletteColorChange}
                                 selectedColor={selectedColor}
                                 onSelectColor={setSelectedColor}
                                 assignedCount={assignedCount}
                                 totalCount={people.length}
+                                onAutoAssign={handleAutoAssign}
                             />
                         </div>
 
@@ -217,7 +250,7 @@ const App: React.FC = () => {
                             </div>
                             
                             {/* Assigned Lists Container */}
-                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6" ref={resultsRef}>
+                            <div className="md:col-span-2 grid gap-6" ref={resultsRef} style={{gridTemplateColumns: `repeat(auto-fit, minmax(240px, 1fr))`}}>
                                 {assigned.map(({ color, people: groupPeople }, groupIndex) => (
                                     <div key={groupIndex} style={{ backgroundColor: color }} className="rounded-xl p-6 shadow-2xl">
                                         <ul className="space-y-2">

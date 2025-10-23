@@ -1,28 +1,43 @@
 
+
+
 import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { MIN_TEAMS, MAX_TEAMS } from '../constants';
 
 interface AssignmentStepProps {
-    paletteSize: 2 | 4;
-    onPaletteSizeChange: (size: 2 | 4) => void;
+    numTeams: number;
+    onNumTeamsChange: (size: number) => void;
     currentPalette: string[];
     onPaletteColorChange: (index: number, newColor: string) => void;
     selectedColor: string;
     onSelectColor: (color: string) => void;
     assignedCount: number;
     totalCount: number;
+    onAutoAssign: () => void;
 }
 
-const PaletteButton: React.FC<{ size: 2 | 4; active: boolean; onClick: () => void; children: React.ReactNode }> = ({ size, active, onClick, children }) => (
-    <button
-        onClick={onClick}
-        className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-            active ? 'bg-sky-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'
-        }`}
-    >
-        {children}
-    </button>
-);
+const NumberControl: React.FC<{ value: number; onChange: (newValue: number) => void; min: number; max: number; }> = ({ value, onChange, min, max }) => {
+    const { t } = useLanguage();
+    return (
+        <div className="flex items-center gap-2 bg-slate-700 rounded-md p-1">
+            <button
+                onClick={() => onChange(value - 1)}
+                disabled={value <= min}
+                className="w-12 h-10 flex items-center justify-center text-2xl font-bold rounded bg-slate-600 hover:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                aria-label="Decrease number of teams"
+            >-</button>
+            <span className="font-bold text-xl text-white w-12 text-center">{value} {t('colors')}</span>
+            <button
+                onClick={() => onChange(value + 1)}
+                disabled={value >= max}
+                className="w-12 h-10 flex items-center justify-center text-2xl font-bold rounded bg-slate-600 hover:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                aria-label="Increase number of teams"
+            >+</button>
+        </div>
+    );
+};
+
 
 const ColorSwatch: React.FC<{ color: string; isSelected: boolean; onClick: () => void; }> = ({ color, isSelected, onClick }) => (
     <button
@@ -36,14 +51,15 @@ const ColorSwatch: React.FC<{ color: string; isSelected: boolean; onClick: () =>
 );
 
 export const AssignmentStep: React.FC<AssignmentStepProps> = ({
-    paletteSize,
-    onPaletteSizeChange,
+    numTeams,
+    onNumTeamsChange,
     currentPalette,
     onPaletteColorChange,
     selectedColor,
     onSelectColor,
     assignedCount,
     totalCount,
+    onAutoAssign,
 }) => {
     const { t } = useLanguage();
 
@@ -55,14 +71,7 @@ export const AssignmentStep: React.FC<AssignmentStepProps> = ({
 
                 <div className="mb-6">
                     <label className="block text-sm font-medium text-slate-400 mb-2">{t('numColorsLabel')}</label>
-                    <div className="flex space-x-2">
-                        <PaletteButton size={2} active={paletteSize === 2} onClick={() => onPaletteSizeChange(2)}>
-                            2 {t('colors')}
-                        </PaletteButton>
-                        <PaletteButton size={4} active={paletteSize === 4} onClick={() => onPaletteSizeChange(4)}>
-                            4 {t('colors')}
-                        </PaletteButton>
-                    </div>
+                     <NumberControl value={numTeams} onChange={onNumTeamsChange} min={MIN_TEAMS} max={MAX_TEAMS} />
                 </div>
 
                 <div className="mb-6">
@@ -86,6 +95,21 @@ export const AssignmentStep: React.FC<AssignmentStepProps> = ({
                         ))}
                     </div>
                 </div>
+
+                <div className="my-6">
+                    <button
+                        onClick={onAutoAssign}
+                        title={t('autoAssignTooltip')}
+                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                        aria-label={t('autoAssignButton')}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" />
+                        </svg>
+                        {t('autoAssignButton')}
+                    </button>
+                </div>
+
 
                 <div className="bg-slate-700/50 rounded-lg p-4 mt-auto">
                     <p className="text-center text-slate-300 font-medium">

@@ -1,5 +1,15 @@
 
-export const PALETTES: { [key: number]: string[] } = {
-    2: ['#242424', '#dedede'], // Dark grey, Dark White
-    4: ['#242424', '#dedede', '#ffdf4f', '#22c55e'], // Dark grey, Dark White, Yellow, Green
-};
+
+export const PREDEFINED_PALETTE: string[] = [
+    '#ef4444', // red-500
+    '#3b82f6', // blue-500
+    '#22c55e', // green-500
+    '#eab308', // yellow-500
+    '#8b5cf6', // violet-500
+    '#f97316', // orange-500
+    '#14b8a6', // teal-500
+    '#ec4899', // pink-500
+];
+
+export const MIN_TEAMS = 2;
+export const MAX_TEAMS = 8;
