@@ -1,13 +1,5 @@
-
-
-
-
-
-
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { toPng } from 'html-to-image';
-import { Capacitor } from '@capacitor/core';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 import type { Person } from './types';
 import { PREDEFINED_PALETTE, MIN_TEAMS, MAX_TEAMS } from './constants';
 import { NameInputStep } from './components/NameInputStep';
@@ -149,20 +141,10 @@ const App: React.FC = () => {
                 quality: 0.95
             });
             
-            if (Capacitor.isNativePlatform()) {
-                await Filesystem.writeFile({
-                    path: `team-assignments-${Date.now()}.png`,
-                    data: dataUrl,
-                    // Fix: Changed Directory.Downloads to Directory.Documents as Downloads is not a valid enum member.
-                    directory: Directory.Documents,
-                });
-                alert(t('imageSavedToDownloads'));
-            } else {
-                const link = document.createElement('a');
-                link.download = 'team-assignments.png';
-                link.href = dataUrl;
-                link.click();
-            }
+            const link = document.createElement('a');
+            link.download = 'team-assignments.png';
+            link.href = dataUrl;
+            link.click();
 
         } catch (err) {
             console.error(err);
