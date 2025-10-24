@@ -1,4 +1,4 @@
-const CACHE_NAME = 'team-color-sorter-v8';
+const CACHE_NAME = 'team-color-sorter-v9';
 const URLS_TO_CACHE = [
   './',
   './index.html',
@@ -22,6 +22,7 @@ self.addEventListener('install', event => {
           console.warn('Failed to cache some initial resources:', err);
         });
       })
+      .then(() => self.skipWaiting()) // Force the waiting service worker to become the active service worker.
   );
 });
 
@@ -45,8 +46,9 @@ self.addEventListener('fetch', event => {
           networkResponse => {
             // Check if we received a valid response.
             // We don't cache opaque responses (e.g. from no-cors requests to CDNs)
-            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-              return networkResponse;
+            if (!networkResponse || networkResponse.status !== 200) {
+                if (networkResponse.type !== 'opaque') console.warn('Not caching invalid response:', event.request.url, networkResponse.status);
+                return networkResponse;
             }
 
             // IMPORTANT: Clone the response. A response is a stream
@@ -79,6 +81,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Take control of all open pages
   );
 });
