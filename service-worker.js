@@ -1,4 +1,4 @@
-const CACHE_NAME = 'team-color-sorter-v10';
+const CACHE_NAME = 'team-color-sorter-v11'; // Incremented version
 const URLS_TO_CACHE = [
   './',
   './index.html',
@@ -26,49 +26,6 @@ self.addEventListener('install', event => {
   );
 });
 
-self.addEventListener('fetch', event => {
-  // We only handle GET requests
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  // Strategy: Cache, falling back to network
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-
-        // Not in cache, fetch from network
-        return fetch(event.request).then(
-          networkResponse => {
-            // Check if we received a valid response.
-            // We don't cache opaque responses (e.g. from no-cors requests to CDNs)
-            if (!networkResponse || networkResponse.status !== 200) {
-                if (networkResponse.type !== 'opaque') console.warn('Not caching invalid response:', event.request.url, networkResponse.status);
-                return networkResponse;
-            }
-
-            // IMPORTANT: Clone the response. A response is a stream
-            // and because we want the browser to consume the response
-            // as well as the cache consuming the response, we need
-            // to clone it so we have two streams.
-            const responseToCache = networkResponse.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return networkResponse;
-          }
-        );
-      })
-  );
-});
-
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -82,5 +39,38 @@ self.addEventListener('activate', event => {
         })
       );
     }).then(() => self.clients.claim()) // Take control of all open pages
+  );
+});
+
+self.addEventListener('fetch', event => {
+  // We only handle GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Strategy: Network falling back to cache.
+  // This ensures that online users always get the freshest content.
+  // The cache is only used when the network request fails (e.g. offline).
+  event.respondWith(
+    fetch(event.request)
+      .then(networkResponse => {
+        // We got a response from the network.
+        // Let's cache it for offline use, but only if it's a valid, successful response.
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME)
+          .then(cache => {
+            // We only cache responses with a 200 status code.
+            if (networkResponse.status === 200) {
+              cache.put(event.request, responseToCache);
+            }
+          });
+        return networkResponse;
+      })
+      .catch(error => {
+        // Network request failed, probably because the user is offline.
+        // Try to serve the response from the cache.
+        console.warn('Network request failed. Serving from cache for:', event.request.url);
+        return caches.match(event.request);
+      })
   );
 });
