@@ -1,4 +1,4 @@
-const CACHE_NAME = 'team-color-sorter-v9';
+const CACHE_NAME = 'team-color-sorter-v10';
 const URLS_TO_CACHE = [
   './',
   './index.html',
